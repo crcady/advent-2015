@@ -1,5 +1,5 @@
 # Advent of Code 2015
-Not-very-good solutions to [Advent of Code](https://adventofcode.com).
+Not-very-good solutions to [Advent of Code](https://adventofcode.com/2015).
 
 ## Project Structure
 Each day currently stands alone. From any dayXX folder, `cargo run` or `cargo build` should work.
@@ -9,4 +9,4 @@ None of the challenge inputs are stored in this repo. Each of the solutions expe
 - `pbpaste | cargo run`
 - `cargo run` followed by one or more lines, followed by `ctrl-d`
 
-The second form lets you do some pseudo-REPL activities.
+The second form lets you do some pseudo-REPL activities, where you can. 
