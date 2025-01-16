@@ -7,27 +7,6 @@ fn main() {
     let mut concrete: HashMap<String, u16> = HashMap::new();
     let mut symbolic: HashMap<String, Gate> = HashMap::new();
 
-    // concrete.insert("A", 0xFF);
-    // concrete.insert("B", 0xA5);
-
-    // symbolic.insert(
-    //     "C",
-    //     Gate::And {
-    //         left: "A",
-    //         right: "B",
-    //     },
-    // );
-
-    let lookup = |name: &str| -> Option<u16> {
-        match concrete.get(name) {
-            Some(val) => Some(*val),
-            None => match name.parse::<u16>() {
-                Ok(val) => Some(val),
-                _ => None,
-            },
-        }
-    };
-
     for n in 0u16..100 {
         concrete.insert(n.to_string(), n);
     }
@@ -55,12 +34,7 @@ fn main() {
             to_remove = None;
         }
 
-        println!("Symbolic: {}, Concrete: {}", symbolic.len(), concrete.len());
-        for (k, v) in concrete.iter() {
-            //println!("{}: {}", k, v)
-        }
-
-        'outer: for (name, gate) in symbolic.iter() {
+        for (name, gate) in symbolic.iter() {
             match gate {
                 Gate::Concrete(_) => (), // This shouldn't ever happen, since we're using two HashMaps
                 Gate::And { left, right } => {
@@ -68,7 +42,7 @@ fn main() {
                         if let Some(right_val) = concrete.get(right) {
                             concrete.insert(name.to_string(), left_val & right_val);
                             to_remove = Some(name.to_string());
-                            break 'outer;
+                            break;
                         }
                     }
                 }
@@ -77,7 +51,7 @@ fn main() {
                         if let Some(right_val) = concrete.get(right) {
                             concrete.insert(name.to_string(), left_val | right_val);
                             to_remove = Some(name.to_string());
-                            break 'outer;
+                            break;
                         }
                     }
                 }
@@ -86,7 +60,7 @@ fn main() {
                         if let Ok(right_val) = right.parse::<u16>() {
                             concrete.insert(name.to_string(), left_val << right_val);
                             to_remove = Some(name.to_string());
-                            break 'outer;
+                            break;
                         }
                     }
                 }
@@ -95,7 +69,7 @@ fn main() {
                         if let Ok(right_val) = right.parse::<u16>() {
                             concrete.insert(name.to_string(), left_val >> right_val);
                             to_remove = Some(name.to_string());
-                            break 'outer;
+                            break;
                         }
                     }
                 }
@@ -103,22 +77,18 @@ fn main() {
                     if let Some(right_val) = concrete.get(right) {
                         concrete.insert(name.to_string(), !right_val);
                         to_remove = Some(name.to_string());
-                        break 'outer;
+                        break;
                     }
                 }
                 Gate::Alias { left } => {
                     if let Some(left_val) = concrete.get(left) {
                         concrete.insert(name.to_string(), *left_val);
                         to_remove = Some(name.to_string());
-                        break 'outer;
+                        break;
                     }
                 }
             }
         }
-    }
-
-    for (k, v) in concrete.iter() {
-        println!("{}: {}", k, v)
     }
 
     match concrete.get("a") {
@@ -137,7 +107,7 @@ enum Gate {
     Alias { left: String },
 }
 
-fn to_gate<'a>(line: &'a String) -> (Gate, &str) {
+fn to_gate(line: &str) -> (Gate, &str) {
     let split: Vec<&str> = line.split("->").collect();
     let name = split[1].trim();
     let split: Vec<&str> = split[0].trim().split(" ").collect();
