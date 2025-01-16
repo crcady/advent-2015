@@ -68,25 +68,21 @@ fn badly_recursive_search(
 
     let mut min_found: Option<u32> = None;
 
-    for skip_index in 0..remaining_cities.len() {
+    for next_city in remaining_cities {
         let mut new_remaining: Vec<usize> = Vec::new();
-        for i in 0..remaining_cities.len() {
-            if i == skip_index {
+        for i in remaining_cities {
+            if i == next_city {
                 continue;
             }
 
-            new_remaining.push(remaining_cities[i]);
+            new_remaining.push(*i);
         }
         let arrival_cost: u32 = match from {
-            Some(index) => distances[index][remaining_cities[skip_index]],
+            Some(from_city) => distances[from_city][*next_city],
             _ => 0,
         };
-        let found_result = badly_recursive_search(
-            distances,
-            &new_remaining,
-            Some(remaining_cities[skip_index]),
-            cmp,
-        ) + arrival_cost;
+        let found_result =
+            badly_recursive_search(distances, &new_remaining, Some(*next_city), cmp) + arrival_cost;
         min_found = match min_found {
             Some(current) => Some(cmp(current, found_result)),
             _ => Some(found_result),
