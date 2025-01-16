@@ -28,6 +28,10 @@ fn main() {
         }
     };
 
+    for n in 0u16..100 {
+        concrete.insert(n.to_string(), n);
+    }
+
     for line in io::stdin().lock().lines() {
         let line = line.expect("Didn't get a line");
         let (gate, name) = to_gate(&line);
@@ -53,7 +57,7 @@ fn main() {
 
         println!("Symbolic: {}, Concrete: {}", symbolic.len(), concrete.len());
         for (k, v) in concrete.iter() {
-            println!("{}: {}", k, v)
+            //println!("{}: {}", k, v)
         }
 
         'outer: for (name, gate) in symbolic.iter() {
@@ -102,6 +106,13 @@ fn main() {
                         break 'outer;
                     }
                 }
+                Gate::Alias { left } => {
+                    if let Some(left_val) = concrete.get(left) {
+                        concrete.insert(name.to_string(), *left_val);
+                        to_remove = Some(name.to_string());
+                        break 'outer;
+                    }
+                }
             }
         }
     }
@@ -123,6 +134,7 @@ enum Gate {
     ShiftL { left: String, right: String },
     ShiftR { left: String, right: String },
     Not { right: String },
+    Alias { left: String },
 }
 
 fn to_gate<'a>(line: &'a String) -> (Gate, &str) {
@@ -131,11 +143,10 @@ fn to_gate<'a>(line: &'a String) -> (Gate, &str) {
     let split: Vec<&str> = split[0].trim().split(" ").collect();
     match split.len() {
         1 => (
-            Gate::Concrete(
-                split[0]
-                    .parse()
-                    .expect("Couldn't parse concrete value in gate definition"),
-            ),
+            match split[0].parse::<u16>() {
+                Ok(val) => Gate::Concrete(val),
+                _ => Gate::Alias { left: split[0].to_string() }
+            },
             &name,
         ),
         2 => (
