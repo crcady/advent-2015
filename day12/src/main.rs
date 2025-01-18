@@ -44,7 +44,7 @@ fn count_no_red(v: &Value) -> i64 {
 fn handle_object(o: &Value) -> i64 {
     let obj = o.as_object().unwrap(); // It's okay to panic if we somehow call this with another variant
     let mut partial = 0i64;
-    for (k, v) in obj.into_iter() {
+    for (_, v) in obj.into_iter() {
         if let Value::String(val) = v {
             if val == &String::from("red") {
                 return 0;
