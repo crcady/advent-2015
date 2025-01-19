@@ -1,4 +1,7 @@
-use std::{cmp::min, io::{self, BufRead}};
+use std::{
+    cmp::min,
+    io::{self, BufRead},
+};
 
 fn main() {
     let mut numbers: Vec<i32> = Vec::new();
@@ -8,8 +11,8 @@ fn main() {
     }
 
     println!("There are {} ways to make 150", count_ways(150, &numbers));
-    
-    let all_the_ways = enumerate_ways(150, &numbers).unwrap();
+
+    let all_the_ways = enumerate_ways(150, &numbers);
 
     let mut min_containers: Option<u32> = None;
 
@@ -42,8 +45,11 @@ fn main() {
         }
     }
 
-    println!("You need at least {} containers and you can do that {} ways", min_containers.unwrap(), way_count);
-    
+    println!(
+        "You need at least {} containers and you can do that {} ways",
+        min_containers.unwrap(),
+        way_count
+    );
 }
 
 fn count_ways(remaining: i32, buckets: &Vec<i32>) -> i32 {
@@ -73,17 +79,17 @@ fn count_ways(remaining: i32, buckets: &Vec<i32>) -> i32 {
     res
 }
 
-fn enumerate_ways(remaining: i32, buckets: &Vec<i32>) -> Option<Vec<Vec<bool>>> {
+fn enumerate_ways(remaining: i32, buckets: &Vec<i32>) -> Vec<Vec<bool>> {
     if remaining < 0 {
-        return None;
+        return Vec::new();
     }
 
     if remaining == 0 {
-        return Some(vec![vec![false; buckets.len()]]);
+        return vec![vec![false; buckets.len()]];
     }
 
     if buckets.len() == 0 {
-        return None;
+        return Vec::new();
     }
 
     let mut res: Vec<Vec<bool>> = Vec::new();
@@ -97,19 +103,13 @@ fn enumerate_ways(remaining: i32, buckets: &Vec<i32>) -> Option<Vec<Vec<bool>>> 
     let results_without = enumerate_ways(remaining, &new_buckets);
     let results_with = enumerate_ways(remaining - current, &new_buckets);
 
-    if let Some(endings) = results_without {
-        for ending in endings {
-            res.push([vec![false], ending].concat());
-        }
-    }
-    if let Some(endings) = results_with {
-        for ending in endings {
-            res.push([vec![true], ending].concat());
-        }
+    for ending in results_without {
+        res.push([vec![false], ending].concat());
     }
 
-    match res.len() {
-        0 => None,
-        _ => Some(res),
+    for ending in results_with {
+        res.push([vec![true], ending].concat());
     }
+
+    res
 }
