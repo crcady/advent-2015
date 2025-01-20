@@ -3,15 +3,15 @@ use std::collections::HashSet;
 
 fn main() {
     let mut i = 1;
-    let mut res = presents_at2(i);
+    let mut res = _presents_at2(i);
     while res < 36_000_000 {
         i += 1;
-        res = presents_at2(i);
+        res = _presents_at2(i);
     }
     println!("House {} got {} presents.", i, res);
 }
 
-fn presents_at(house_number: u32) -> u32 {
+fn _presents_at(house_number: u32) -> u32 {
     let factorization = Factorization::<u32>::run(house_number);
 
     let mut elves: HashSet<u32> = HashSet::new();
@@ -32,7 +32,7 @@ fn presents_at(house_number: u32) -> u32 {
     presents
 }
 
-fn presents_at2(house_number: u32) -> u32 {
+fn _presents_at2(house_number: u32) -> u32 {
     let factorization = Factorization::<u32>::run(house_number);
 
     let mut elves: HashSet<u32> = HashSet::new();
