@@ -1,4 +1,7 @@
-use std::{collections::HashSet, io::{self, BufRead}};
+use std::{
+    collections::HashSet,
+    io::{self, BufRead},
+};
 
 use regex::Regex;
 
@@ -39,33 +42,8 @@ fn main() {
 
     println!("Found {} unique options", possibilities.len());
 
-    let mut steps = 0;
-    possibilities.clear();
-    possibilities.insert("e".to_owned());
-
-    loop {
-        match possibilities.get(input) {
-            Some(_) => break,
-            None => {
-                let mut new_possibilities: HashSet<String> = HashSet::new();
-                for line in &possibilities {
-                    for rule in &rules {
-                        for new_string in build_outputs(rule, line).into_iter() {
-                            if input.len() >= new_string.len() {
-                                new_possibilities.insert(new_string);
-                            }
-                        }
-                    }
-                }
-                possibilities = new_possibilities;
-                steps += 1;
-            },
-        }
-    }
-
-    println!("Took {} steps to find the molecule", steps);
-
-
+    let min_steps = depth_first_search(&rules, &mut input.to_string(), 0, None);
+    println!("Best I can do is {} steps", min_steps.unwrap_or(0));
 }
 
 #[derive(Debug)]
@@ -90,4 +68,57 @@ fn parse_line(line: &str) -> Replacement {
         from: splits[0].to_owned(),
         to: splits[2].to_owned(),
     }
+}
+
+fn depth_first_search(
+    rules: &Vec<Replacement>,
+    the_string: &mut String,
+    call_depth: usize,
+    stop_depth: Option<usize>,
+) -> Option<usize> {
+    if let Some(stop_depth) = stop_depth {
+        if call_depth >= stop_depth {
+            return None;
+        }
+    }
+
+    if the_string == "e" {
+        return Some(call_depth);
+    }
+
+    let mut best_so_far: Option<usize> = stop_depth;
+
+    for rule in rules {
+        let re = Regex::new(&rule.to).unwrap();
+        let ranges: Vec<_> = re
+            .find_iter(&the_string)
+            .map(|x| (x.start(), x.end()))
+            .collect();
+
+        for r in ranges.iter() {
+            // Do the replacement
+            the_string.replace_range(r.0..r.1, &rule.from);
+
+            // Call ourselves recursively
+            let res = depth_first_search(rules, the_string, call_depth + 1, best_so_far);
+
+            // Check the result
+            if let Some(found_steps) = res {
+                if let Some(previous_best) = best_so_far {
+                    if found_steps < previous_best {
+                        dbg!(found_steps);
+                        best_so_far = Some(found_steps);
+                    }
+                } else {
+                    dbg!(found_steps);
+                    best_so_far = Some(found_steps);
+                }
+            }
+
+            // Undo the replacement
+            the_string.replace_range(r.0..r.0 + rule.from.len(), &rule.to);
+        }
+    }
+
+    best_so_far
 }
